@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const LoginRecruiter = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -19,7 +21,10 @@ const LoginRecruiter = () => {
         "http://localhost:3000/login-recruiter",
         formData
       );
-      alert(response.data);
+      if (response.status === 200) {
+        alert("Login successful!");
+        navigate("/recruiter-dashboard"); // Redirect to dashboard after successful login
+      }
     } catch (error) {
       console.error("Error logging in recruiter:", error);
       alert("Error logging in recruiter");
@@ -27,29 +32,61 @@ const LoginRecruiter = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Email:</label>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+    <div style={{ textAlign: "center", padding: "20px" }}>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div>
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <button type="submit">Login</button>
+      </form>
+
+      <div
+        style={{
+          marginTop: "20px",
+          display: "flex",
+          justifyContent: "center",
+          gap: "20px",
+        }}
+      >
+        <button
+          onClick={() => navigate("/login-candidate")}
+          style={{
+            padding: "10px 20px",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
+        >
+          Go to Candidate Login
+        </button>
+        <button
+          onClick={() => navigate("/register-recruiter")}
+          style={{
+            padding: "10px 20px",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
+        >
+          Register as Recruiter
+        </button>
       </div>
-      <div>
-        <label>Password:</label>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <button type="submit">Login</button>
-    </form>
+    </div>
   );
 };
 
