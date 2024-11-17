@@ -1,0 +1,16 @@
+employee register page
+- name number email password
+recruiter register page
+- company name, company email, company number, company password
+employee login page
+- email, password
+recruiter login page
+- email, password
+jobs page
+- show all jobs with all details
+applications page
+- show all applications with all details
+recruiter job page
+- add job, show all jobs posted by recruiter
+employee job page
+- show all jobs applied by employee
