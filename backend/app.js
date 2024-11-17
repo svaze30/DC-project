@@ -116,6 +116,73 @@ app.post("/login-recruiter", async (req, res) => {
   }
 });
 
+// Endpoint to get all jobs by a recruiter
+app.get("/recruiter/:recruiterId/jobs", async (req, res) => {
+  const { recruiterId } = req.params;
+
+  try {
+    const jobs = await Job.find({ recruiterId }).populate('recruiterId');
+    res.status(200).json(jobs);
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    res.status(500).send("Error fetching jobs");
+  }
+});
+
+// Endpoint to get all candidates who have applied for a certain job
+app.get("/job/:jobId/candidates", async (req, res) => {
+  const { jobId } = req.params;
+
+  try {
+    const applications = await Application.find({ jobId }).populate('candidateId');
+    const candidates = applications.map(application => application.candidateId);
+    res.status(200).json(candidates);
+  } catch (error) {
+    console.error("Error fetching candidates:", error);
+    res.status(500).send("Error fetching candidates");
+  }
+});
+
+// Endpoint to update a candidate's application status
+app.put("/application/:applicationId/status", async (req, res) => {
+  const { applicationId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const application = await Application.findById(applicationId);
+    if (!application) {
+      return res.status(404).send("Application not found");
+    }
+
+    application.status = status;
+    await application.save();
+    res.status(200).send("Application status updated successfully");
+  } catch (error) {
+    console.error("Error updating application status:", error);
+    res.status(500).send("Error updating application status");
+  }
+});
+
+// Endpoint for a candidate to apply for a job
+app.post("/apply", async (req, res) => {
+  const { candidateId, jobId, recruiterId, notes } = req.body;
+
+  try {
+    const newApplication = new Application({
+      candidateId,
+      jobId,
+      recruiterId,
+      notes,
+    });
+
+    await newApplication.save();
+    res.status(201).send("Application submitted successfully");
+  } catch (error) {
+    console.error("Error submitting application:", error);
+    res.status(500).send("Error submitting application");
+  }
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
