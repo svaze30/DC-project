@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const Recruiter = require("./Recruiter");
 const jobSchema = new mongoose.Schema(
   {
     recruiterId: {

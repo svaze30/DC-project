@@ -22,6 +22,9 @@ const LoginCandidate = () => {
         formData
       );
       if (response.status === 200) {
+        const { candidateId } = response.data;
+
+        localStorage.setItem("candidateId", candidateId);
         alert("Login successful!");
         setTimeout(() => {
           navigate("/candidate-dashboard");
@@ -33,7 +36,6 @@ const LoginCandidate = () => {
     }
   };
 
-  // Rest of the component remains the same
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
       <form onSubmit={handleSubmit}>

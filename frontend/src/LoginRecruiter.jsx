@@ -3,11 +3,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const LoginRecruiter = () => {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,9 +21,13 @@ const LoginRecruiter = () => {
         "http://localhost:3000/login-recruiter",
         formData
       );
-      if (response.status === 200) {
-        alert("Login successful!");
-        navigate("/recruiter-dashboard"); // Redirect to dashboard after successful login
+
+      if (response.data.recruiterId) {
+        localStorage.setItem("recruiterId", response.data.recruiterId);
+        console.log("recruiterId:", response.data.recruiterId);
+        navigate("/recruiter-dashboard");
+      } else {
+        throw new Error("Recruiter data not found in response");
       }
     } catch (error) {
       console.error("Error logging in recruiter:", error);
