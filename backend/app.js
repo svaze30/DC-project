@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const port = 3000;
+const cors = require("cors");
 const mongoose = require("mongoose");
 const { addTempDocument } = require("./tempCollection");
 const Candidate = require("./models/Candidate");
@@ -8,6 +9,7 @@ const Recruiter = require("./models/Recruiter");
 
 // Middleware
 app.use(express.json());
+app.use(cors());
 
 mongoose.connect(
   "mongodb+srv://vazeswaroop:kwW4OBxGWYCvW8N1@dc-cluster.9ylpk.mongodb.net/?retryWrites=true&w=majority&appName=dc-cluster",
