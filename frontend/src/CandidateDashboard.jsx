@@ -9,13 +9,12 @@ const CandidateDashboard = () => {
   const [skills, setSkills] = useState("");
   const [profile, setProfile] = useState({});
   const navigate = useNavigate();
-  const candidateId = localStorage.getItem("candidateId"); // Retrieve candidateId from localStorage
+  const candidateId = localStorage.getItem("candidateId");
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         const response = await axios.get("http://localhost:3000/jobs");
-        console.log("Jobs response:", response.data); // Log the response data
         setJobs(response.data);
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -24,8 +23,9 @@ const CandidateDashboard = () => {
 
     const fetchApplications = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/candidate/${candidateId}/applications`);
-        console.log("Applications response:", response.data); // Log the response data
+        const response = await axios.get(
+          `http://localhost:3000/candidate/${candidateId}/applications`
+        );
         setApplications(response.data);
       } catch (error) {
         console.error("Error fetching applications:", error);
@@ -34,7 +34,9 @@ const CandidateDashboard = () => {
 
     const fetchCandidateProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/candidate/${candidateId}`);
+        const response = await axios.get(
+          `http://localhost:3000/candidate/${candidateId}`
+        );
         const { resumeUrl, skills, ...profileData } = response.data;
         setResumeUrl(resumeUrl);
         setSkills(skills.join(", "));
@@ -44,22 +46,28 @@ const CandidateDashboard = () => {
       }
     };
 
-    fetchJobs();
-    fetchApplications();
-    fetchCandidateProfile();
-  }, [candidateId]);
+    if (candidateId) {
+      fetchJobs();
+      fetchApplications();
+      fetchCandidateProfile();
+    } else {
+      navigate("/login-candidate");
+    }
+  }, [candidateId, navigate]);
 
   const handleApply = async (jobId, recruiterId) => {
     try {
-      const response = await axios.post("http://localhost:3000/apply", {
+      await axios.post("http://localhost:3000/apply", {
         candidateId,
         jobId,
         recruiterId,
         notes: "Looking forward to this opportunity.",
       });
       alert("Application submitted successfully");
-      // Refresh applications after applying
-      fetchApplications();
+      const response = await axios.get(
+        `http://localhost:3000/candidate/${candidateId}/applications`
+      );
+      setApplications(response.data);
     } catch (error) {
       console.error("Error applying for job:", error);
       alert("Error applying for job");
@@ -71,7 +79,7 @@ const CandidateDashboard = () => {
     try {
       await axios.put(`http://localhost:3000/candidate/${candidateId}`, {
         resumeUrl,
-        skills: skills.split(",").map(skill => skill.trim()),
+        skills: skills.split(",").map((skill) => skill.trim()),
       });
       alert("Profile updated successfully");
     } catch (error) {
@@ -80,166 +88,197 @@ const CandidateDashboard = () => {
     }
   };
 
-  // Filter out jobs that the candidate has already applied for
-  const appliedJobIds = applications.map(application => application.jobId._id);
-  const availableJobs = jobs.filter(job => !appliedJobIds.includes(job._id));
+  const appliedJobIds = applications.map(
+    (application) => application.jobId._id
+  );
+  const availableJobs = jobs.filter((job) => !appliedJobIds.includes(job._id));
+
+  const containerStyle = {
+    maxWidth: "1200px",
+    margin: "0 auto",
+    padding: "40px 20px",
+    backgroundColor: "#f8f9fa",
+    minHeight: "100vh",
+  };
+
+  const cardStyle = {
+    backgroundColor: "white",
+    borderRadius: "12px",
+    boxShadow: "0 2px 12px rgba(0, 0, 0, 0.1)",
+    padding: "24px",
+    marginBottom: "32px",
+  };
+
+  const buttonStyle = {
+    padding: "12px 24px",
+    fontSize: "16px",
+    cursor: "pointer",
+    backgroundColor: "#4299e1",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    transition: "all 0.3s ease",
+  };
 
   return (
-    <div
-      style={{
-        textAlign: "center",
-        padding: "20px",
-      }}
-    >
-      <h1
-        style={{
-          fontSize: "24px",
-          color: "#333",
-          marginBottom: "20px",
-        }}
-      >
-        Candidate Dashboard
-      </h1>
+    <div style={containerStyle}>
+      <div style={cardStyle}>
+        <h2 style={{ color: "#2d3748", marginBottom: "24px" }}>
+          Profile Details
+        </h2>
+        <div style={{ marginBottom: "20px" }}>
+          <p>
+            <strong>Name:</strong> {profile.name}
+          </p>
+          <p>
+            <strong>Email:</strong> {profile.email}
+          </p>
+          <p>
+            <strong>Contact Number:</strong> {profile.contactNumber}
+          </p>
+          <p>
+            <strong>Resume URL:</strong> {resumeUrl}
+          </p>
+          <p>
+            <strong>Skills:</strong> {skills}
+          </p>
+        </div>
 
-      <h3>Profile Details</h3>
-      <div style={{ marginBottom: "20px" }}>
-        <p><strong>Name:</strong> {profile.name}</p>
-        <p><strong>Email:</strong> {profile.email}</p>
-        <p><strong>Contact Number:</strong> {profile.contactNumber}</p>
-        <p><strong>Resume URL:</strong> {resumeUrl}</p>
-        <p><strong>Skills:</strong> {skills}</p>
+        <h3 style={{ color: "#4a5568", marginBottom: "16px" }}>
+          Update Profile
+        </h3>
+        <form onSubmit={handleProfileUpdate}>
+          <div style={{ marginBottom: "16px" }}>
+            <label style={{ display: "block", marginBottom: "8px" }}>
+              Resume URL:
+            </label>
+            <input
+              type="text"
+              value={resumeUrl}
+              onChange={(e) => setResumeUrl(e.target.value)}
+              required
+              style={{
+                width: "100%",
+                padding: "8px",
+                border: "1px solid #e2e8f0",
+                borderRadius: "4px",
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: "16px" }}>
+            <label style={{ display: "block", marginBottom: "8px" }}>
+              Skills (comma separated):
+            </label>
+            <input
+              type="text"
+              value={skills}
+              onChange={(e) => setSkills(e.target.value)}
+              required
+              style={{
+                width: "100%",
+                padding: "8px",
+                border: "1px solid #e2e8f0",
+                borderRadius: "4px",
+              }}
+            />
+          </div>
+          <button type="submit" style={buttonStyle}>
+            Update Profile
+          </button>
+        </form>
       </div>
 
-      <h3>Update Profile</h3>
-      <form onSubmit={handleProfileUpdate} style={{ marginBottom: "20px" }}>
-        <div>
-          <label>Resume URL:</label>
-          <input
-            type="text"
-            value={resumeUrl}
-            onChange={(e) => setResumeUrl(e.target.value)}
-            required
-            style={{ marginLeft: "10px", padding: "5px", width: "300px" }}
-          />
-        </div>
-        <div style={{ marginTop: "10px" }}>
-          <label>Skills (comma separated):</label>
-          <input
-            type="text"
-            value={skills}
-            onChange={(e) => setSkills(e.target.value)}
-            required
-            style={{ marginLeft: "10px", padding: "5px", width: "300px" }}
-          />
-        </div>
-        <button
-          type="submit"
+      <div style={cardStyle}>
+        <h3 style={{ color: "#2d3748", marginBottom: "24px" }}>
+          Available Jobs
+        </h3>
+        <div
           style={{
-            marginTop: "10px",
-            padding: "5px 10px",
-            fontSize: "14px",
-            cursor: "pointer",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
+            display: "grid",
+            gap: "20px",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
           }}
         >
-          Update Profile
-        </button>
-      </form>
-
-      <h3>Available Jobs:</h3>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginBottom: "20px",
-        }}
-      >
-        <thead>
-          <tr>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Title</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Description</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Location</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Employment Type</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Status</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Action</th>
-          </tr>
-        </thead>
-        <tbody>
           {availableJobs.map((job) => (
-            <tr key={job._id}>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{job.title}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{job.description}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{job.location}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{job.employmentType}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{job.status}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                {job.status === "Open" ? (
-                  <button
-                    onClick={() => handleApply(job._id, job.recruiterId)}
-                    style={{
-                      padding: "5px 10px",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                      backgroundColor: "#4CAF50",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    Apply
-                  </button>
-                ) : (
-                  "Closed"
-                )}
-              </td>
-            </tr>
+            <div
+              key={job._id}
+              style={{
+                padding: "20px",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
+              }}
+            >
+              <h4 style={{ marginBottom: "12px" }}>{job.title}</h4>
+              <p>{job.description}</p>
+              <p>
+                <strong>Location:</strong> {job.location}
+              </p>
+              <p>
+                <strong>Type:</strong> {job.employmentType}
+              </p>
+              <p>
+                <strong>Skills Required:</strong>{" "}
+                {job.skillsRequired.join(", ")}
+              </p>
+              <button
+                onClick={() => handleApply(job._id, job.recruiterId)}
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: "#48bb78",
+                  marginTop: "12px",
+                }}
+              >
+                Apply
+              </button>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
 
-      <h3>Jobs You Have Applied For:</h3>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginBottom: "20px",
-        }}
-      >
-        <thead>
-          <tr>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Title</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Description</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Location</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Employment Type</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div style={cardStyle}>
+        <h3 style={{ color: "#2d3748", marginBottom: "24px" }}>Applied Jobs</h3>
+        <div
+          style={{
+            display: "grid",
+            gap: "20px",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+          }}
+        >
           {applications.map((application) => (
-            <tr key={application._id}>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{application.jobId.title}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{application.jobId.description}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{application.jobId.location}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{application.jobId.employmentType}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{application.status}</td>
-            </tr>
+            <div
+              key={application._id}
+              style={{
+                padding: "20px",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
+              }}
+            >
+              <h4 style={{ marginBottom: "12px" }}>
+                {application.jobId.title}
+              </h4>
+              <p>{application.jobId.description}</p>
+              <p>
+                <strong>Location:</strong> {application.jobId.location}
+              </p>
+              <p>
+                <strong>Type:</strong> {application.jobId.employmentType}
+              </p>
+              <p>
+                <strong>Status:</strong> {application.status}
+              </p>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
 
       <button
-        onClick={() => navigate("/")}
+        onClick={() => {
+          localStorage.removeItem("candidateId");
+          navigate("/");
+        }}
         style={{
-          padding: "10px 20px",
-          fontSize: "16px",
-          cursor: "pointer",
-          backgroundColor: "#ff4444",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
+          ...buttonStyle,
+          backgroundColor: "#f56565",
         }}
       >
         Logout

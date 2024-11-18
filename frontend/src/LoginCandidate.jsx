@@ -15,81 +15,175 @@ const LoginCandidate = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent form reset
+
     try {
       const response = await axios.post(
         "http://localhost:3000/login-candidate",
         formData
       );
-      if (response.status === 200) {
-        const { candidateId } = response.data;
 
-        localStorage.setItem("candidateId", candidateId);
-        alert("Login successful!");
-        setTimeout(() => {
-          navigate("/candidate-dashboard");
-        }, 1000);
+      if (response.data.candidateId) {
+        // Store candidateId in localStorage
+        localStorage.setItem("candidateId", response.data.candidateId);
+
+        // Navigate immediately without setTimeout
+        navigate("/candidate-dashboard");
+      } else {
+        alert("Login failed - no candidate ID received");
       }
     } catch (error) {
       console.error("Error logging in candidate:", error);
-      alert("Error logging in candidate");
+      alert(error.response?.data || "Error logging in candidate");
     }
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit">Login</button>
-      </form>
-
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundColor: "#f5f5f5",
+        padding: "20px",
+      }}
+    >
       <div
         style={{
-          marginTop: "20px",
-          display: "flex",
-          justifyContent: "center",
-          gap: "20px",
+          backgroundColor: "white",
+          padding: "40px",
+          borderRadius: "10px",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          width: "100%",
+          maxWidth: "400px",
         }}
       >
-        <button
-          onClick={() => navigate("/login-recruiter")}
+        <h2
           style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            cursor: "pointer",
+            color: "#333",
+            marginBottom: "30px",
+            fontSize: "24px",
+            textAlign: "center",
           }}
         >
-          Go to Recruiter Login
-        </button>
-        <button
-          onClick={() => navigate("/register-candidate")}
+          Login as Candidate
+        </h2>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: "20px" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                color: "#555",
+                fontSize: "14px",
+              }}
+            >
+              Email:
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                fontSize: "16px",
+                transition: "border-color 0.3s ease",
+                outline: "none",
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: "20px" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                color: "#555",
+                fontSize: "14px",
+              }}
+            >
+              Password:
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                fontSize: "16px",
+                transition: "border-color 0.3s ease",
+                outline: "none",
+              }}
+            />
+          </div>
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              padding: "12px",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              fontSize: "16px",
+              cursor: "pointer",
+              transition: "background-color 0.3s ease",
+            }}
+          >
+            Login
+          </button>
+        </form>
+
+        <div
           style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            cursor: "pointer",
+            marginTop: "20px",
+            display: "flex",
+            justifyContent: "center",
+            gap: "20px",
           }}
         >
-          Register as Candidate
-        </button>
+          <button
+            onClick={() => navigate("/login-recruiter")}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              cursor: "pointer",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              transition: "background-color 0.3s ease",
+            }}
+          >
+            Go to Recruiter Login
+          </button>
+          <button
+            onClick={() => navigate("/register-candidate")}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              cursor: "pointer",
+              backgroundColor: "#28a745",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              transition: "background-color 0.3s ease",
+            }}
+          >
+            Register as Candidate
+          </button>
+        </div>
       </div>
     </div>
   );
