@@ -137,7 +137,7 @@ const CandidateDashboard = () => {
             <strong>Contact Number:</strong> {profile.contactNumber}
           </p>
           <p>
-            <strong>Resume URL:</strong> {resumeUrl}
+            <strong>Resume URL:</strong> <a href={resumeUrl}>Here</a>
           </p>
           <p>
             <strong>Skills:</strong> {skills}

@@ -1,3 +1,42 @@
+// const express = require("express");
+// const app = express();
+// const port = 3000;
+// const cors = require("cors");
+// const mongoose = require("mongoose");
+// const { addTempDocument } = require("./tempCollection");
+// const Candidate = require("./models/Candidate");
+// const Recruiter = require("./models/Recruiter");
+// const Job = require("./models/Job");
+// const Application = require("./models/Application");
+
+// // Simulation configuration
+// const serverId = Math.floor(Math.random() * 1000);
+// let lastHeartbeat = Date.now();
+// let clockOffset = Math.random() * 100;
+// let currentLoad = Math.random() * 100;
+// let activeConnections = 0;
+// const peers = new Map();
+
+// // Berkeley Algorithm Implementation
+// const berkeleySyncInterval = 10000;
+// let masterClock = Date.now();
+
+// const calculateClockDifference = () => {
+//   const peers_differences = Array.from(peers.values()).map(
+//     (peer) => peer.clock - masterClock
+//   );
+//   const avg_difference =
+//     peers_differences.reduce((a, b) => a + b, 0) / peers_differences.length;
+//   console.log(
+//     `[Berkeley Algorithm] Clock differences from peers: ${peers_differences.join(
+//       ", "
+//     )}ms`
+//   );
+//   console.log(
+//     `[Berkeley Algorithm] Average difference: ${avg_difference.toFixed(2)}ms`
+//   );
+//   return avg_difference;
+// };
 const express = require("express");
 const app = express();
 const port = 3000;
@@ -15,7 +54,7 @@ let lastHeartbeat = Date.now();
 let clockOffset = Math.random() * 100;
 let currentLoad = Math.random() * 100;
 let activeConnections = 0;
-const peers = new Map();
+const peers = new Map(); // Simulate other servers in cluster
 
 // Berkeley Algorithm Implementation
 const berkeleySyncInterval = 10000;
@@ -37,6 +76,80 @@ const calculateClockDifference = () => {
   );
   return avg_difference;
 };
+
+// Bully Algorithm Implementation
+let isLeader = false;
+let leaderId = null;
+
+const initiateElection = () => {
+  console.log(`[Bully Algorithm] Server #${serverId} initiating election`);
+  const higherIdPeers = Array.from(peers.keys()).filter((id) => id > serverId);
+
+  if (higherIdPeers.length === 0) {
+    console.log(`[Bully Algorithm] Server #${serverId} becomes the leader`);
+    isLeader = true;
+    leaderId = serverId;
+    notifyVictory();
+  } else {
+    higherIdPeers.forEach((peerId) => {
+      console.log(
+        `[Bully Algorithm] Server #${serverId} sending election message to Server #${peerId}`
+      );
+      // Simulate sending election message
+      peers.get(peerId).onElectionMessage(serverId);
+    });
+  }
+};
+
+const notifyVictory = () => {
+  console.log(
+    `[Bully Algorithm] Server #${serverId} notifying peers of victory`
+  );
+  peers.forEach((peer, peerId) => {
+    if (peerId !== serverId) {
+      console.log(
+        `[Bully Algorithm] Server #${serverId} sending victory message to Server #${peerId}`
+      );
+      // Simulate sending victory message
+      peer.onVictoryMessage(serverId);
+    }
+  });
+};
+
+// Simulate receiving election message
+const onElectionMessage = (peerId) => {
+  console.log(
+    `[Bully Algorithm] Server #${serverId} received election message from Server #${peerId}`
+  );
+  if (peerId < serverId) {
+    console.log(
+      `[Bully Algorithm] Server #${serverId} sending OK message to Server #${peerId}`
+    );
+    // Simulate sending OK message
+    peers.get(peerId).onOkMessage(serverId);
+    initiateElection();
+  }
+};
+
+// Simulate receiving victory message
+const onVictoryMessage = (newLeaderId) => {
+  console.log(
+    `[Bully Algorithm] Server #${serverId} received victory message from Server #${newLeaderId}`
+  );
+  isLeader = false;
+  leaderId = newLeaderId;
+};
+
+// Simulate receiving OK message
+const onOkMessage = (peerId) => {
+  console.log(
+    `[Bully Algorithm] Server #${serverId} received OK message from Server #${peerId}`
+  );
+  // Do nothing, wait for victory message
+};
+
+// Add this server to the peers map
+peers.set(serverId, { onElectionMessage, onVictoryMessage, onOkMessage });
 
 // Load Balancing Algorithms
 const loadBalancingStrategy = {

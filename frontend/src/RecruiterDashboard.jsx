@@ -332,10 +332,19 @@ const RecruiterDashboard = () => {
 
             <div style={{ marginTop: "20px" }}>
               <h4 style={styles.text}>Applications:</h4>
+              {console.log(applications[job._id])}
               {applications[job._id]?.map((application) => (
                 <div key={application._id} style={styles.applicationCard}>
-                  <p style={styles.text}>Name: {application.name}</p>
-                  <p style={styles.text}>Email: {application.email}</p>
+                  <p style={styles.text}>
+                    Name: {application.candidateId.name}
+                  </p>
+                  <p style={styles.text}>
+                    Email: {application.candidateId.email}
+                  </p>
+                  <p style={styles.text}>
+                    Resume
+                    <a href={application.candidateId.resumeUrl}>: Here</a>
+                  </p>
                   <p style={styles.text}>
                     Status: {application.status || "Pending"}
                   </p>
